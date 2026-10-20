@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mindfulness Widget</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:"Helvetica Neue",Inter,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:14px;
+background:radial-gradient(circle at 15% 10%,#ffd1c1 0,transparent 45%),radial-gradient(circle at 90% 30%,#d9b8ff 0,transparent 50%),radial-gradient(circle at 40% 100%,#ffe9a8 0,transparent 55%),#fbeef3;color:#3a2a3f}
+.card{width:100%;max-width:380px;padding:20px;border-radius:28px;background:rgba(255,255,255,.38);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid rgba(255,255,255,.7);box-shadow:0 10px 40px rgba(150,100,170,.22),inset 0 1px 0 rgba(255,255,255,.8)}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{font-size:12px;font-weight:600;letter-spacing:.42em}
+.sub{font-size:10px;opacity:.6;letter-spacing:.15em;margin-top:4px}
+.ring{position:relative;width:54px;height:54px}
+.ring svg{transform:rotate(-90deg)}
+.ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:300}
+.bar{height:6px;border-radius:9px;background:rgba(255,255,255,.55);margin-bottom:12px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,#ff9ec4,#ffb58a,#c3a1ff);transition:width .5s ease}
+ul{list-style:none;padding:0;max-height:420px;overflow:auto;scrollbar-width:none}
+ul::-webkit-scrollbar{display:none}
+li{display:flex;align-items:center;gap:12px;padding:9px 12px;margin-bottom:6px;border-radius:999px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.6);cursor:pointer;font-size:11px;letter-spacing:.16em;transition:.25s;user-select:none}
+li:hover{background:rgba(255,255,255,.75);transform:translateY(-1px)}
+.dot{width:18px;height:18px;flex:none;border-radius:50%;border:1.5px solid rgba(90,60,110,.4);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:.25s}
+li.done .dot{background:linear-gradient(135deg,#ff8fb8,#c59bff);border-color:transparent;box-shadow:0 0 12px rgba(255,140,190,.6)}
+li.done .dot::after{content:"\2713"}
+li.done .t{opacity:.45;text-decoration:line-through}
+footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:10px;letter-spacing:.14em;opacity:.7}
+button{font:inherit;letter-spacing:.14em;border:0;background:rgba(255,255,255,.6);padding:6px 12px;border-radius:999px;cursor:pointer;color:inherit}
+</style></head><body>
+<div class="card">
+<header><div><h1>M I N D F U L N E S S</h1><div class="sub" id="date"></div></div>
+<div class="ring"><svg width="54" height="54"><circle cx="27" cy="27" r="22" stroke="rgba(255,255,255,.6)" stroke-width="5" fill="none"/>
+<circle id="arc" cx="27" cy="27" r="22" stroke="url(#g)" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2" style="transition:stroke-dashoffset .6s"/>
+<defs><linearGradient id="g"><stop offset="0" stop-color="#ff8fb8"/><stop offset="1" stop-color="#b48cff"/></linearGradient></defs></svg><span id="pct">0%</span></div></header>
+<div class="bar"><i id="fill"></i></div>
+<ul id="list"></ul>
+<footer><span id="count"></span><button id="reset">RESET</button></footer>
+</div>
+<script>
+const items=["SUNRISE","INTENTION","BREATHWORK","JOURNAL","GRATITUDE","MEDITATE","MANIFEST & VISUALIZE","AFFIRMATIONS","YOGA NIDRA / NSDR","STRETCH / YOGA","CHECK IN & LOG MOOD - MORNING","CHECK IN & LOG MOOD - AFTERNOON","CHECK IN & LOG MOOD - EVENING","ASTROLOGY","TAROT","SUNSET","NATURE","HABIT LOGGER"];
+const defaults=[1,2,3,4,5].map(i=>i); // starting checks: intention..meditate
+const today=new Date().toISOString().slice(0,10);
+const KEY="mindfulness-widget-v1";
+let store={};try{store=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
+let state=store.date===today?store.checked:[1,2,3,4,5];
+function save(){try{localStorage.setItem(KEY,JSON.stringify({date:today,checked:state}))}catch(e){}}
+document.getElementById("date").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"}).toUpperCase();
+const ul=document.getElementById("list");
+items.forEach((t,i)=>{const li=document.createElement("li");li.innerHTML='<span class="dot"></span><span class="t">'+t.replace(/&/g,"&amp;")+'</span>';
+li.onclick=()=>{state=state.includes(i)?state.filter(x=>x!==i):[...state,i];save();render()};ul.appendChild(li)});
+function render(){[...ul.children].forEach((li,i)=>li.classList.toggle("done",state.includes(i)));
+const p=Math.round(state.length/items.length*100);
+document.getElementById("pct").textContent=p+"%";document.getElementById("fill").style.width=p+"%";
+document.getElementById("arc").style.strokeDashoffset=138.2*(1-p/100);
+document.getElementById("count").textContent=state.length+" / "+items.length+" DONE"}
+document.getElementById("reset").onclick=()=>{state=[];save();render()};
+render();save();
+</script></body></html>
